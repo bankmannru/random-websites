@@ -79,7 +79,7 @@ let keys = {
 
 // Добавим изображение космического вермизлюка
 const wormImg = new Image();
-wormImg.src = 'data:image/svg+xml;base64,' + btoa('<svg xmlns="http://www.w3.org/2000/svg" width="40" height="50" viewBox="0 0 40 50"><path d="M20,2 Q35,10 35,25 Q35,40 20,48 Q5,40 5,25 Q5,10 20,2 Z" fill="#0a5c0a" stroke="#0a3c0a" stroke-width="2"/><circle cx="15" cy="18" r="3" fill="white"/><circle cx="15" cy="18" r="1.5" fill="black"/><circle cx="25" cy="18" r="3" fill="white"/><circle cx="25" cy="18" r="1.5" fill="black"/><path d="M12,30 Q20,35 28,30" stroke="#0a3c0a" stroke-width="1" fill="none"/></svg>');
+wormImg.src = 'data:image/svg+xml;base64,' + btoa('<svg xmlns="http://www.w3.org/2000/svg" width="40" height="50" viewBox="0 0 40 50"><ellipse cx="20" cy="25" rx="18" ry="23" fill="#0a5c0a" stroke="#0a3c0a" stroke-width="2"/><circle cx="15" cy="18" r="3" fill="white"/><circle cx="15" cy="18" r="1.5" fill="black"/><circle cx="25" cy="18" r="3" fill="white"/><circle cx="25" cy="18" r="1.5" fill="black"/></svg>');
 
 // Инициализация размеров канваса
 setupCanvas();
