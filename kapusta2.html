@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Капуста 2: Тёмный лес</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #f0f0f0;
+        }
+        
+        .game-container {
+            max-width: 100%;
+            padding: 10px;
+        }
+        
+        h1 {
+            color: #4a7c10;
+            text-shadow: 0 0 5px #000;
+        }
+        
+        canvas {
+            background-color: #111;
+            border: 3px solid #2a4a00;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+        
+        .instructions {
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .button {
+            background-color: #2a4a00;
+        }
+        
+        .button:hover {
+            background-color: #3a6a00;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Капуста 2: Тёмный лес</h1>
+        <div class="score-container">Счёт: <span id="score">0</span> | Здоровье: <span id="health">100</span>%</div>
+        <canvas id="gameCanvas"></canvas>
+        <div class="instructions">
+            <p class="desktop-only">Используйте WASD для передвижения</p>
+            <p class="desktop-only">Нажмите левую кнопку мыши, чтобы бросить капусту</p>
+            <p class="mobile-only">Используйте виртуальный джойстик для передвижения</p>
+            <p class="mobile-only">Коснитесь правой части экрана, чтобы бросить капусту</p>
+            <button id="startButton">Начать игру</button>
+            <a href="index.html" class="button back-button">Назад</a>
+        </div>
+    </div>
+    <script src="kapusta2.js"></script>
+</body>
+</html> 

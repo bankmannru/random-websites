@@ -46,6 +46,22 @@ let worms = [];
 let lastWormTime = 0;
 let wormInterval = 1500; // Интервал появления вермизлюков (мс)
 
+// Добавляем массив для power-up'ов
+let powerUps = [];
+let powerUpDuration = 5000; // Длительность действия power-up'а в мс
+let speedBoostActive = false;
+let shieldActive = false;
+
+// Добавляем новые переменные для дополнительных фишек
+let multiShotActive = false;      // Режим мульти-выстрела
+let comboCounter = 0;             // Счетчик комбо
+let lastKillTime = 0;             // Время последнего убийства вермизлюка
+let comboTimeout = 2000;          // Время для продолжения комбо (мс)
+let bigCabbageChance = 0.15;      // Шанс появления большой капусты
+
+// Добавьте эту переменную в начало файла
+let bestScore = 0;
+
 // Инициализация размеров канваса
 setupCanvas();
 player.x = canvas.width / 2;
@@ -95,15 +111,68 @@ window.addEventListener('resize', () => {
     }
 });
 
-// Функция запуска игры
+// Добавьте эту функцию для анимации начала игры
+function showStartAnimation() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Рисуем фон
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Рисуем текст
+    ctx.fillStyle = 'white';
+    ctx.font = isMobile ? '32px Arial' : '48px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Готовы?', canvas.width / 2, canvas.height / 2 - 50);
+    
+    // Обратный отсчет
+    let countdown = 3;
+    
+    const countdownInterval = setInterval(() => {
+        // Очищаем область для цифры
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(canvas.width/2 - 50, canvas.height/2 - 30, 100, 100);
+        
+        // Рисуем цифру
+        ctx.fillStyle = 'white';
+        ctx.font = isMobile ? '48px Arial' : '72px Arial';
+        ctx.fillText(countdown, canvas.width / 2, canvas.height / 2 + 30);
+        
+        countdown--;
+        
+        if (countdown < 0) {
+            clearInterval(countdownInterval);
+            gameRunning = true;
+            requestAnimationFrame(gameLoop);
+        }
+    }, 1000);
+}
+
+// Модифицируем функцию startGame, чтобы убрать экран "Готовы?"
 function startGame() {
     if (!gameRunning) {
+        // Сбрасываем все переменные состояния
         gameRunning = true;
         score = 0;
         scoreElement.textContent = score;
         cabbages = [];
         worms = [];
+        powerUps = [];
         lastWormTime = Date.now();
+        
+        // Сбрасываем все активные эффекты
+        speedBoostActive = false;
+        shieldActive = false;
+        multiShotActive = false;
+        
+        // Сбрасываем счетчики комбо
+        comboCounter = 0;
+        lastKillTime = 0;
+        
+        // Сбрасываем интервал появления вермизлюков
+        wormInterval = 1500;
+        
+        // Запускаем игровой цикл сразу, без анимации
         requestAnimationFrame(gameLoop);
     }
 }
@@ -111,13 +180,46 @@ function startGame() {
 // Функция броска капусты
 function throwCabbage() {
     if (gameRunning) {
-        cabbages.push({
+        // Обычный выстрел
+        const cabbage = {
             x: player.x,
             y: player.y - player.height / 2,
             width: 30,
             height: 30,
-            speed: 8
-        });
+            speed: 8,
+            isBig: Math.random() < bigCabbageChance // Шанс на большую капусту
+        };
+        
+        // Если капуста большая, увеличиваем её размер
+        if (cabbage.isBig) {
+            cabbage.width = 45;
+            cabbage.height = 45;
+        }
+        
+        cabbages.push(cabbage);
+        
+        // Если активен режим мульти-выстрела, добавляем еще 2 капусты под углом
+        if (multiShotActive) {
+            cabbages.push({
+                x: player.x - 20,
+                y: player.y - player.height / 2,
+                width: 30,
+                height: 30,
+                speed: 8,
+                speedX: -1.5, // Движение влево
+                isBig: false
+            });
+            
+            cabbages.push({
+                x: player.x + 20,
+                y: player.y - player.height / 2,
+                width: 30,
+                height: 30,
+                speed: 8,
+                speedX: 1.5, // Движение вправо
+                isBig: false
+            });
+        }
     }
 }
 
@@ -133,8 +235,35 @@ function createWorm() {
     });
 }
 
+// Создание power-up'а
+function createPowerUp() {
+    const powerUpX = Math.random() * (canvas.width - 30);
+    // Теперь у нас 3 типа power-up'ов с равной вероятностью
+    const randomValue = Math.random();
+    let type;
+    
+    if (randomValue < 0.33) {
+        type = 'speed';
+    } else if (randomValue < 0.66) {
+        type = 'shield';
+    } else {
+        type = 'multishot';
+    }
+    
+    powerUps.push({
+        x: powerUpX,
+        y: 0,
+        width: 30,
+        height: 30,
+        speed: 2,
+        type: type
+    });
+}
+
 // Проверка столкновений
 function checkCollisions() {
+    let hitInThisFrame = false;
+    
     for (let i = cabbages.length - 1; i >= 0; i--) {
         for (let j = worms.length - 1; j >= 0; j--) {
             if (
@@ -144,12 +273,86 @@ function checkCollisions() {
                 cabbages[i].y + cabbages[i].height > worms[j].y
             ) {
                 // Столкновение произошло
+                hitInThisFrame = true;
+                
+                // Большая капуста может уничтожить несколько вермизлюков
+                if (cabbages[i].isBig) {
+                    // Проверяем соседних вермизлюков в радиусе
+                    const blastRadius = 50;
+                    const hitX = cabbages[i].x;
+                    const hitY = cabbages[i].y;
+                    
+                    // Удаляем текущего вермизлюка
+                    worms.splice(j, 1);
+                    
+                    // Проверяем других вермизлюков в радиусе взрыва
+                    for (let k = worms.length - 1; k >= 0; k--) {
+                        const dx = worms[k].x + worms[k].width/2 - hitX;
+                        const dy = worms[k].y + worms[k].height/2 - hitY;
+                        const distance = Math.sqrt(dx*dx + dy*dy);
+                        
+                        if (distance < blastRadius) {
+                            worms.splice(k, 1);
+                            score += 10;
+                            comboCounter++;
+                        }
+                    }
+                    
+                    // Визуальный эффект взрыва
+                    createExplosion(hitX, hitY);
+                } else {
+                    // Обычная капуста уничтожает одного вермизлюка
+                    worms.splice(j, 1);
+                }
+                
                 cabbages.splice(i, 1);
-                worms.splice(j, 1);
-                score += 10;
+                
+                // Обработка комбо
+                const now = Date.now();
+                if (now - lastKillTime < comboTimeout) {
+                    comboCounter++;
+                    // Бонус за комбо
+                    const comboBonus = Math.min(comboCounter * 5, 50); // Максимум 50 очков бонуса
+                    score += 10 + comboBonus;
+                    
+                    // Показываем текст комбо
+                    showComboText(comboCounter);
+                } else {
+                    comboCounter = 1;
+                    score += 10;
+                }
+                
+                lastKillTime = now;
                 scoreElement.textContent = score;
                 break;
             }
+        }
+    }
+    
+    // Сбрасываем комбо, если не было попаданий за определенное время
+    if (!hitInThisFrame && comboCounter > 0 && Date.now() - lastKillTime > comboTimeout) {
+        comboCounter = 0;
+    }
+}
+
+// Проверка столкновений с power-up'ами
+function checkPowerUpCollisions() {
+    for (let i = powerUps.length - 1; i >= 0; i--) {
+        if (
+            player.x - player.width/2 < powerUps[i].x + powerUps[i].width &&
+            player.x + player.width/2 > powerUps[i].x &&
+            player.y - player.height < powerUps[i].y + powerUps[i].height &&
+            player.y > powerUps[i].y
+        ) {
+            // Столкновение с power-up'ом
+            if (powerUps[i].type === 'speed') {
+                activateSpeedBoost();
+            } else if (powerUps[i].type === 'shield') {
+                activateShield();
+            } else if (powerUps[i].type === 'multishot') {
+                activateMultiShot();
+            }
+            powerUps.splice(i, 1);
         }
     }
 }
@@ -158,20 +361,32 @@ function checkCollisions() {
 function checkGameOver() {
     for (let i = 0; i < worms.length; i++) {
         if (worms[i].y + worms[i].height >= canvas.height) {
+            if (shieldActive) {
+                shieldActive = false;
+                worms.splice(i, 1);
+                continue;
+            }
             gameRunning = false;
+            
+            // Обновляем лучший результат
+            if (score > bestScore) {
+                bestScore = score;
+            }
+            
             ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
             ctx.fillStyle = 'white';
             ctx.font = isMobile ? '32px Arial' : '48px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText('Игра окончена!', canvas.width / 2, canvas.height / 2);
+            ctx.fillText('Игра окончена!', canvas.width / 2, canvas.height / 2 - 70);
             
             ctx.font = isMobile ? '18px Arial' : '24px Arial';
-            ctx.fillText(`Ваш счёт: ${score}`, canvas.width / 2, canvas.height / 2 + 50);
+            ctx.fillText(`Ваш счёт: ${score}`, canvas.width / 2, canvas.height / 2 - 20);
+            ctx.fillText(`Лучший счёт: ${bestScore}`, canvas.width / 2, canvas.height / 2 + 20);
             
             const restartText = 'Нажмите "Начать игру"';
-            ctx.fillText(restartText, canvas.width / 2, canvas.height / 2 + 100);
+            ctx.fillText(restartText, canvas.width / 2, canvas.height / 2 + 70);
             return true;
         }
     }
@@ -194,7 +409,19 @@ function update() {
     
     // Обновление позиции капусты
     for (let i = cabbages.length - 1; i >= 0; i--) {
-        cabbages[i].y -= cabbages[i].speed;
+        // Вертикальное движение
+        cabbages[i].y -= speedBoostActive ? cabbages[i].speed * 1.5 : cabbages[i].speed;
+        
+        // Горизонтальное движение для диагональных выстрелов
+        if (cabbages[i].speedX) {
+            cabbages[i].x += cabbages[i].speedX;
+            
+            // Проверка границ экрана
+            if (cabbages[i].x < 0 || cabbages[i].x > canvas.width) {
+                cabbages.splice(i, 1);
+                continue;
+            }
+        }
         
         // Удаление капусты, вышедшей за пределы экрана
         if (cabbages[i].y + cabbages[i].height < 0) {
@@ -217,8 +444,15 @@ function update() {
         wormInterval = Math.max(500, wormInterval - 10);
     }
     
+    // Создание power-up'ов
+    if (Math.random() < 0.005) { // Уменьшим шанс до 0.5% для более редкого появления
+        createPowerUp();
+    }
+    
     // Проверка столкновений
     checkCollisions();
+    checkPowerUpCollisions();
+    updatePowerUps(); // Добавляем вызов функции обновления power-up'ов
 }
 
 // Отрисовка игры
@@ -231,12 +465,245 @@ function draw() {
     
     // Отрисовка капусты
     for (const cabbage of cabbages) {
-        ctx.drawImage(cabbageImg, cabbage.x - cabbage.width / 2, cabbage.y, cabbage.width, cabbage.height);
+        if (cabbage.isBig) {
+            // Большая капуста
+            ctx.drawImage(cabbageImg, cabbage.x - cabbage.width / 2, cabbage.y, cabbage.width, cabbage.height);
+            
+            // Добавляем свечение для большой капусты
+            ctx.save();
+            ctx.shadowColor = '#4a7c10';
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.arc(cabbage.x, cabbage.y + cabbage.height/2, cabbage.width/2, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.restore();
+        } else {
+            // Обычная капуста
+            ctx.drawImage(cabbageImg, cabbage.x - cabbage.width / 2, cabbage.y, cabbage.width, cabbage.height);
+        }
     }
     
     // Отрисовка вермизлюков
     for (const worm of worms) {
         ctx.drawImage(wormImg, worm.x, worm.y, worm.width, worm.height);
+    }
+    
+    // Отрисовка power-up'ов
+    drawPowerUps();
+    
+    // Отрисовка активных эффектов
+    drawActiveEffects();
+    
+    // Если щит активен, рисуем вокруг игрока защитное поле
+    if (shieldActive) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(65, 105, 225, 0.7)';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(player.x, player.y - player.height / 2, player.width * 0.8, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+    }
+}
+
+// Активация ускорения
+function activateSpeedBoost() {
+    speedBoostActive = true;
+    setTimeout(() => {
+        speedBoostActive = false;
+    }, powerUpDuration);
+}
+
+// Активация щита
+function activateShield() {
+    shieldActive = true;
+}
+
+// Активация мульти-выстрела
+function activateMultiShot() {
+    multiShotActive = true;
+    setTimeout(() => {
+        multiShotActive = false;
+    }, powerUpDuration);
+}
+
+// Обновление состояния power-up'ов
+function updatePowerUps() {
+    for (let i = powerUps.length - 1; i >= 0; i--) {
+        powerUps[i].y += powerUps[i].speed;
+        if (powerUps[i].y > canvas.height) {
+            powerUps.splice(i, 1);
+        }
+    }
+}
+
+// Отрисовка power-up'ов
+function drawPowerUps() {
+    for (const powerUp of powerUps) {
+        ctx.save();
+        
+        if (powerUp.type === 'speed') {
+            // Рисуем иконку ускорения (молния)
+            ctx.fillStyle = '#FFD700'; // Золотой цвет
+            ctx.beginPath();
+            ctx.moveTo(powerUp.x + 15, powerUp.y);
+            ctx.lineTo(powerUp.x + 5, powerUp.y + 15);
+            ctx.lineTo(powerUp.x + 15, powerUp.y + 15);
+            ctx.lineTo(powerUp.x + 15, powerUp.y + 30);
+            ctx.lineTo(powerUp.x + 25, powerUp.y + 15);
+            ctx.lineTo(powerUp.x + 15, powerUp.y + 15);
+            ctx.lineTo(powerUp.x + 15, powerUp.y);
+            ctx.fill();
+            
+            // Добавляем обводку
+            ctx.strokeStyle = '#FFA500';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        } else if (powerUp.type === 'shield') {
+            // Рисуем иконку щита
+            ctx.fillStyle = '#4169E1'; // Синий цвет
+            
+            // Щит (овал)
+            ctx.beginPath();
+            ctx.ellipse(powerUp.x + 15, powerUp.y + 15, 12, 15, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Обводка щита
+            ctx.strokeStyle = '#000080';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Звезда в центре щита
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            const centerX = powerUp.x + 15;
+            const centerY = powerUp.y + 15;
+            const spikes = 5;
+            const outerRadius = 6;
+            const innerRadius = 3;
+            
+            for (let i = 0; i < spikes * 2; i++) {
+                const radius = i % 2 === 0 ? outerRadius : innerRadius;
+                const angle = (Math.PI / spikes) * i;
+                const x = centerX + Math.cos(angle) * radius;
+                const y = centerY + Math.sin(angle) * radius;
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.closePath();
+            ctx.fill();
+        } else if (powerUp.type === 'multishot') {
+            // Рисуем иконку мульти-выстрела (три капусты)
+            ctx.fillStyle = '#32CD32'; // Зеленый цвет
+            
+            // Рисуем три маленьких круга
+            const centerX = powerUp.x + 15;
+            const centerY = powerUp.y + 15;
+            
+            // Левая капуста
+            ctx.beginPath();
+            ctx.arc(centerX - 8, centerY, 6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Центральная капуста
+            ctx.beginPath();
+            ctx.arc(centerX, centerY - 8, 6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Правая капуста
+            ctx.beginPath();
+            ctx.arc(centerX + 8, centerY, 6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Обводка
+            ctx.strokeStyle = '#006400';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(centerX - 8, centerY, 6, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(centerX, centerY - 8, 6, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(centerX + 8, centerY, 6, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+        
+        ctx.restore();
+    }
+}
+
+// Добавим визуальную индикацию активных power-up'ов
+function drawActiveEffects() {
+    if (speedBoostActive || shieldActive || multiShotActive) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.font = '14px Arial';
+        
+        let yPos = 30;
+        
+        if (speedBoostActive) {
+            ctx.fillText('Ускорение активно!', 10, yPos);
+            yPos += 20;
+        }
+        
+        if (shieldActive) {
+            ctx.fillText('Щит активен!', 10, yPos);
+            yPos += 20;
+        }
+        
+        if (multiShotActive) {
+            ctx.fillText('Мульти-выстрел активен!', 10, yPos);
+        }
+        
+        ctx.restore();
+    }
+}
+
+// Создаем визуальный эффект взрыва
+function createExplosion(x, y) {
+    ctx.save();
+    
+    // Рисуем круг взрыва
+    const gradient = ctx.createRadialGradient(x, y, 0, x, y, 50);
+    gradient.addColorStop(0, 'rgba(255, 255, 0, 0.8)');
+    gradient.addColorStop(0.5, 'rgba(255, 165, 0, 0.6)');
+    gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+    
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(x, y, 50, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.restore();
+    
+    // Анимация затухания взрыва
+    let radius = 50;
+    let opacity = 0.8;
+    
+    const explosionInterval = setInterval(() => {
+        radius += 5;
+        opacity -= 0.1;
+        
+        if (opacity <= 0) {
+            clearInterval(explosionInterval);
+        }
+    }, 50);
+}
+
+// Показываем текст комбо
+function showComboText(combo) {
+    if (combo > 1) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(255, 215, 0, 0.8)';
+        ctx.font = 'bold 24px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(`Комбо x${combo}!`, canvas.width / 2, canvas.height / 2 - 50);
+        ctx.restore();
     }
 }
 
