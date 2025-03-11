@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Капуста 4: Путешествие во времени</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background-color: #1a1a2e;
+            color: #f0f0f0;
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(74, 220, 16, 0.1) 0%, transparent 60%),
+                linear-gradient(to right, rgba(25, 25, 112, 0.2), rgba(72, 61, 139, 0.2));
+        }
+        
+        .game-container {
+            max-width: 100%;
+            padding: 10px;
+        }
+        
+        h1 {
+            color: #4adc10;
+            text-shadow: 0 0 10px #4adc10;
+        }
+        
+        canvas {
+            background-color: #000;
+            border: 3px solid #4adc10;
+            box-shadow: 0 0 20px rgba(74, 220, 16, 0.5);
+        }
+        
+        .era-selector {
+            display: flex;
+            justify-content: space-around;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+        
+        .era-button {
+            background-color: #2d2d4d;
+            color: #fff;
+            border: 2px solid #4adc10;
+            padding: 8px 15px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .era-button:hover, .era-button.active {
+            background-color: #4adc10;
+            color: #000;
+        }
+        
+        .instructions {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .button {
+            background-color: #4adc10;
+            color: #000;
+            text-shadow: none;
+        }
+        
+        .button:hover {
+            background-color: #5aff20;
+        }
+        
+        .score-container {
+            color: #4adc10;
+            text-shadow: 0 0 5px #4adc10;
+        }
+        
+        .time-portal {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, #4adc10, transparent);
+            animation: pulse 2s infinite alternate;
+            pointer-events: none;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.5; transform: scale(1); }
+            100% { opacity: 0.8; transform: scale(1.1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Капуста 4: Путешествие во времени</h1>
+        <div class="score-container">Счёт: <span id="score">0</span> | Энергия: <span id="energy">100</span>% | Эпоха: <span id="era">Настоящее</span></div>
+        <div class="era-selector">
+            <button class="era-button" data-era="prehistoric">Доисторическая</button>
+            <button class="era-button" data-era="egypt">Древний Египет</button>
+            <button class="era-button" data-era="medieval">Средневековье</button>
+            <button class="era-button" data-era="western">Дикий Запад</button>
+            <button class="era-button" data-era="future">Будущее</button>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div class="instructions">
+            <p class="desktop-only">Используйте WASD или стрелки для перемещения</p>
+            <p class="desktop-only">Нажмите пробел для взаимодействия</p>
+            <p class="mobile-only">Используйте виртуальный джойстик для перемещения</p>
+            <p class="mobile-only">Коснитесь правой части экрана для взаимодействия</p>
+            <button id="startButton">Начать игру</button>
+            <a href="index.html" class="button back-button">Назад</a>
+        </div>
+    </div>
+    <script src="kapusta4.js"></script>
+</body>
+</html> 

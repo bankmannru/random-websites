@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактор уровней - Капуста 4: Путешествие во времени</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background-color: #1a1a2e;
+            color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        
+        .editor-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            color: #4adc10;
+            text-align: center;
+            text-shadow: 0 0 10px #4adc10;
+        }
+        
+        .editor-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            margin-right: 20px;
+        }
+        
+        label {
+            margin-bottom: 5px;
+            color: #4adc10;
+        }
+        
+        select, input, button {
+            padding: 8px;
+            border-radius: 5px;
+            border: 2px solid #4adc10;
+            background-color: #2d2d4d;
+            color: #fff;
+        }
+        
+        button {
+            cursor: pointer;
+            background-color: #4adc10;
+            color: #000;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background-color: #5aff20;
+        }
+        
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background-color: #000;
+            border: 3px solid #4adc10;
+            box-shadow: 0 0 20px rgba(74, 220, 16, 0.5);
+        }
+        
+        .instructions {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .instructions h2 {
+            color: #4adc10;
+            margin-top: 0;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 5px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="editor-container">
+        <h1>Редактор уровней - Капуста 4: Путешествие во времени</h1>
+        
+        <div class="editor-controls">
+            <div class="control-group">
+                <label for="levelName">Название уровня:</label>
+                <input type="text" id="levelName" placeholder="level1">
+            </div>
+            
+            <div class="control-group">
+                <label for="eraSelector">Эпоха:</label>
+                <select id="eraSelector">
+                    <option value="present">Настоящее</option>
+                    <option value="prehistoric">Доисторическая</option>
+                    <option value="egypt">Древний Египет</option>
+                    <option value="medieval">Средневековье</option>
+                    <option value="western">Дикий Запад</option>
+                    <option value="future">Будущее</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="objectTypeSelector">Тип объекта:</label>
+                <select id="objectTypeSelector">
+                    <option value="platform">Платформа</option>
+                    <option value="enemy">Вермизлюк</option>
+                    <option value="collectible">Коллекционный предмет</option>
+                    <option value="portal">Портал времени</option>
+                    <option value="timeMachine">Машина времени</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <button id="saveButton">Сохранить уровень</button>
+                <button id="loadButton">Загрузить уровень</button>
+            </div>
+            
+            <div class="control-group">
+                <button id="clearButton">Очистить уровень</button>
+                <button id="exportButton">Экспорт уровня</button>
+                <button id="importButton">Импорт уровня</button>
+                <input type="file" id="importFile" class="hidden" accept=".json">
+            </div>
+        </div>
+        
+        <canvas id="editorCanvas" width="800" height="600"></canvas>
+        
+        <div class="instructions">
+            <h2>Инструкции:</h2>
+            <ul>
+                <li>Выберите эпоху и тип объекта, который хотите разместить.</li>
+                <li>Для размещения платформы: нажмите и удерживайте левую кнопку мыши, затем перетащите, чтобы задать размер.</li>
+                <li>Для размещения других объектов: просто кликните в нужном месте.</li>
+                <li>Для порталов времени вам будет предложено ввести назначение (эпоху).</li>
+                <li>Сохраняйте свой прогресс регулярно!</li>
+            </ul>
+            <p>Созданные уровни можно использовать в игре "Капуста 4: Путешествие во времени".</p>
+            <a href="kapusta4.html" class="button">Вернуться к игре</a>
+        </div>
+    </div>
+    
+    <script src="kapusta4_editor.js"></script>
+</body>
+</html> 
