@@ -133,4 +133,16 @@ main {
 
 .welcome, .sites-list {
     margin-bottom: 40px;
+}
+
+.tower-radius {
+    position: absolute;
+    width: 250%;
+    height: 250%;
+    background: radial-gradient(circle, rgba(255,0,0,0.1) 0%, rgba(255,0,0,0) 100%);
+    left: -75%;
+    top: -75%;
+    pointer-events: none;
+    border-radius: 50%;
+    z-index: -1;
 } 

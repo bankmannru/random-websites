@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Морковь: Подземное приключение</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background-color: #3d2314;
+            color: #f0f0f0;
+            font-family: Arial, sans-serif;
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(255, 140, 0, 0.1) 0%, transparent 60%),
+                linear-gradient(to right, rgba(61, 35, 20, 0.8), rgba(101, 67, 33, 0.8));
+        }
+        
+        .game-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #ff8c00;
+            text-shadow: 0 0 10px #ff8c00;
+        }
+        
+        canvas {
+            background-color: #5e3a1e;
+            border: 3px solid #ff8c00;
+            box-shadow: 0 0 20px rgba(255, 140, 0, 0.5);
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .score-container {
+            margin: 15px 0;
+            font-size: 1.2em;
+            color: #ff8c00;
+        }
+        
+        .instructions {
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: left;
+        }
+        
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #ff8c00;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin: 10px 5px;
+            text-decoration: none;
+        }
+        
+        .button:hover {
+            background-color: #ffa333;
+        }
+        
+        .game-over {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            display: none;
+        }
+        
+        .game-over h2 {
+            color: #ff8c00;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        
+        .game-over p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+        
+        .upgrade-panel {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+        
+        .upgrade {
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upgrade:hover {
+            background-color: rgba(255, 140, 0, 0.3);
+        }
+        
+        .upgrade-title {
+            color: #ff8c00;
+            font-weight: bold;
+        }
+        
+        .upgrade-cost {
+            color: #ffd700;
+        }
+        
+        .upgrade-description {
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Морковь: Подземное приключение</h1>
+        
+        <div class="score-container">
+            Глубина: <span id="depth">0</span> м | 
+            Питательные вещества: <span id="nutrients">0</span> | 
+            Здоровье: <span id="health">100</span>%
+        </div>
+        
+        <canvas id="gameCanvas"></canvas>
+        
+        <div class="upgrade-panel">
+            <div class="upgrade" id="speedUpgrade">
+                <div class="upgrade-title">Скорость роста</div>
+                <div class="upgrade-cost">Стоимость: 50</div>
+                <div class="upgrade-description">Увеличивает скорость движения</div>
+            </div>
+            <div class="upgrade" id="strengthUpgrade">
+                <div class="upgrade-title">Прочность</div>
+                <div class="upgrade-cost">Стоимость: 50</div>
+                <div class="upgrade-description">Увеличивает здоровье и защиту</div>
+            </div>
+            <div class="upgrade" id="nutrientUpgrade">
+                <div class="upgrade-title">Поглощение</div>
+                <div class="upgrade-cost">Стоимость: 50</div>
+                <div class="upgrade-description">Больше питательных веществ</div>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h2>Как играть:</h2>
+            <p>Используйте стрелки или WASD для управления морковкой.</p>
+            <p>Прокладывайте путь через почву, собирая питательные вещества.</p>
+            <p>Избегайте вредителей и камней, которые могут повредить вашу морковку.</p>
+            <p>Улучшайте свою морковку, чтобы проникать глубже в почву.</p>
+            <button id="startButton" class="button">Начать игру</button>
+            <a href="index.html" class="button">Назад</a>
+        </div>
+        
+        <div class="game-over" id="gameOver">
+            <h2>Игра окончена!</h2>
+            <p>Ваша морковка не выдержала подземных испытаний!</p>
+            <p>Достигнутая глубина: <span id="finalDepth">0</span> м</p>
+            <p>Собрано питательных веществ: <span id="finalNutrients">0</span></p>
+            <button id="restartButton" class="button">Начать заново</button>
+        </div>
+    </div>
+    
+    <script src="morkov.js"></script>
+</body>
+</html> 

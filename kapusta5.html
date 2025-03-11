@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Капуста 5: Стратегия Капустных Полей</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background-color: #1a1a2e;
+            color: #f0f0f0;
+            font-family: Arial, sans-serif;
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(74, 220, 16, 0.1) 0%, transparent 60%),
+                linear-gradient(to right, rgba(25, 25, 112, 0.2), rgba(72, 61, 139, 0.2));
+        }
+        
+        .game-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            color: #4adc10;
+            text-shadow: 0 0 10px #4adc10;
+            text-align: center;
+        }
+        
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 5px;
+            margin: 20px 0;
+            background-color: #2d2d4d;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(74, 220, 16, 0.3);
+        }
+        
+        .cell {
+            aspect-ratio: 1;
+            background-color: #3a3a5e;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        
+        .cell:hover {
+            background-color: #4a4a7e;
+        }
+        
+        .cell.soil {
+            background-color: #8B4513;
+        }
+        
+        .cell.cabbage-seed {
+            background-color: #8B4513;
+        }
+        
+        .cell.cabbage-seed::after {
+            content: "";
+            width: 30%;
+            height: 30%;
+            background-color: #4adc10;
+            border-radius: 50%;
+        }
+        
+        .cell.cabbage-growing {
+            background-color: #8B4513;
+        }
+        
+        .cell.cabbage-growing::after {
+            content: "";
+            width: 50%;
+            height: 50%;
+            background-color: #4adc10;
+            border-radius: 50%;
+        }
+        
+        .cell.cabbage-ready {
+            background-color: #8B4513;
+        }
+        
+        .cell.cabbage-ready::after {
+            content: "";
+            width: 80%;
+            height: 80%;
+            background-color: #4adc10;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #4adc10;
+        }
+        
+        .cell.tower {
+            background-color: #8B4513;
+        }
+        
+        .cell.tower::after {
+            content: "";
+            width: 70%;
+            height: 70%;
+            background-color: #C0C0C0;
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+        }
+        
+        .cell.worm {
+            position: relative;
+        }
+        
+        .cell.worm::after {
+            content: "";
+            width: 60%;
+            height: 60%;
+            background-color: #0a5c0a;
+            border-radius: 50%;
+            position: absolute;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .resources {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .resource {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .resource-icon {
+            width: 24px;
+            height: 24px;
+            background-color: #4adc10;
+            border-radius: 50%;
+        }
+        
+        .money-icon {
+            background-color: #FFD700;
+        }
+        
+        .tools {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .tool {
+            padding: 8px 15px;
+            background-color: #2d2d4d;
+            color: #fff;
+            border: 2px solid #4adc10;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .tool:hover, .tool.active {
+            background-color: #4adc10;
+            color: #000;
+        }
+        
+        .wave-info {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.2em;
+            color: #4adc10;
+        }
+        
+        .instructions {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .button {
+            display: inline-block;
+            padding: 8px 15px;
+            background-color: #4adc10;
+            color: #000;
+            text-decoration: none;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .button:hover {
+            background-color: #5aff20;
+        }
+        
+        .game-over {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            display: none;
+        }
+        
+        .game-over h2 {
+            color: #4adc10;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        
+        .game-over p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .game-board {
+                grid-template-columns: repeat(8, 1fr);
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .resources {
+                justify-content: center;
+            }
+            
+            .tools {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Капуста 5: Стратегия Капустных Полей</h1>
+        
+        <div class="controls">
+            <div class="resources">
+                <div class="resource">
+                    <div class="resource-icon"></div>
+                    <span>Капуста: <span id="cabbage-count">0</span></span>
+                </div>
+                <div class="resource">
+                    <div class="resource-icon money-icon"></div>
+                    <span>Деньги: <span id="money-count">100</span></span>
+                </div>
+            </div>
+            
+            <div class="tools">
+                <button class="tool active" data-tool="soil">Вспахать (10₽)</button>
+                <button class="tool" data-tool="seed">Посадить (5₽)</button>
+                <button class="tool" data-tool="harvest">Собрать</button>
+                <button class="tool" data-tool="tower">Башня (50₽)</button>
+            </div>
+        </div>
+        
+        <div class="wave-info">
+            Волна: <span id="wave-number">1</span> | Осталось вермизлюков: <span id="worms-left">0</span> | До следующей волны: <span id="time-to-next-wave">30</span>с
+        </div>
+        
+        <div class="game-board" id="game-board"></div>
+        
+        <div class="instructions">
+            <h2>Как играть:</h2>
+            <p>1. Вспахивайте землю, сажайте и собирайте капусту</p>
+            <p>2. Стройте защитные башни, чтобы отбиваться от вермизлюков</p>
+            <p>3. Защищайте свои капустные поля от волн вермизлюков</p>
+            <p>4. Продавайте капусту, чтобы получать деньги на развитие</p>
+            <button id="start-button" class="button">Начать игру</button>
+            <button id="sell-all-button" class="button">Продать всю капусту</button>
+            <a href="index.html" class="button">Назад</a>
+        </div>
+        
+        <div class="game-over" id="game-over">
+            <h2>Игра окончена!</h2>
+            <p>Вермизлюки уничтожили все ваши капустные поля!</p>
+            <p>Вы продержались <span id="waves-survived">0</span> волн</p>
+            <button id="restart-button" class="button">Начать заново</button>
+        </div>
+    </div>
+    
+    <script src="kapusta5.js"></script>
+</body>
+</html> 
